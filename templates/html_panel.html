@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Server | ALAMIN HOSTING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0c0e14; color: #fff; font-family: 'Segoe UI', sans-serif; }
+
+        .toast-container { position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+        .toast { background:#1a1d27; border:1px solid #2a2d37; border-radius:12px; padding:14px 18px; min-width:300px; max-width:380px; display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease-out; box-shadow:0 10px 40px rgba(0,0,0,0.5); }
+        .toast.success { border-left:4px solid #10b981; }
+        .toast.error { border-left:4px solid #ef4444; }
+        .toast.info { border-left:4px solid #3b82f6; }
+        .toast.warning { border-left:4px solid #f59e0b; }
+        @keyframes slideIn { from{transform:translateX(400px);opacity:0} to{transform:translateX(0);opacity:1} }
+        @keyframes slideOut { from{transform:translateX(0);opacity:1} to{transform:translateX(400px);opacity:0} }
+
+        .spinner { width:20px;height:20px;border:3px solid #2a2d37;border-top:3px solid #10b981;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        .stat-card { background:#12141c; border:1px solid #1e2130; border-radius:12px; padding:14px; transition:all 0.3s; }
+        .stat-card:hover { border-color:#10b981; }
+
+        .drop-zone {
+            border: 2px dashed #2a2d37;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background: #0a0c12;
+            cursor: pointer;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .drop-zone i.big { font-size: 3rem; color: #10b981; margin-bottom: 15px; display: block; }
+
+        .site-card {
+            background: #12141c;
+            border: 1px solid #1e2130;
+            border-radius: 14px;
+            padding: 16px;
+            transition: all 0.3s;
+        }
+        .site-card:hover {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn { transition:all 0.2s; font-weight:600; font-size:13px; }
+        .btn:active { transform:scale(0.95); }
+
+        .status-dot { display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle; }
+
+        .url-box {
+            background: #0a0c12;
+            border: 1px solid #10b981;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .url-box .url {
+            color: #10b981;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .copy-btn {
+            background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 4px 10px;
+            border-radius: 6px; font-size: 11px; transition: all 0.2s; cursor: pointer;
+            border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600;
+        }
+        .copy-btn:hover { background: rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+        .copy-btn.copied { background: rgba(34, 197, 94, 0.3); color: #86efac; border-color: rgba(34, 197, 94, 0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="h-16 bg-[#12141c] border-b border-gray-800 flex items-center px-6 justify-between sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-green-600 to-green-800">
+                <i class="fas fa-globe text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black">ALAMIN <span class="text-green-500">HOSTING</span></h1>
+                <p class="text-[10px] text-gray-400">HTML Server • {{ username }}</p>
+            </div>
+        </div>
+        <a href="/logout" class="text-red-500 hover:text-red-400"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </header>
+
+    <main class="container mx-auto p-4 max-w-6xl" id="mainContent">
+        <div class="text-center py-20">
+            <div class="spinner mx-auto" style="width:40px;height:40px;border-width:4px;"></div>
+            <p class="text-gray-500 mt-4">Loading...</p>
+        </div>
+    </main>
+
+    <script>
+        const USERNAME = '{{ username }}';
+        const MAX_SITES = {{ max_sites|default(1) }};
+
+        let currentView = 'sites';
+        let currentSiteId = null;
+        let currentSiteName = null;
+
+        function showToast(message, type='info', duration=4000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let iconHTML = '';
+            if (type === 'info') iconHTML = '<div class="spinner"></div>';
+            else if (type === 'success') iconHTML = '<i class="fas fa-check-circle text-green-400 text-lg"></i>';
+            else if (type === 'error') iconHTML = '<i class="fas fa-times-circle text-red-400 text-lg"></i>';
+            else if (type === 'warning') iconHTML = '<i class="fas fa-exclamation-triangle text-yellow-400 text-lg"></i>';
+            toast.innerHTML = `<div>${iconHTML}</div><div class="flex-1"><p class="text-sm">${message}</p></div>`;
+            container.appendChild(toast);
+            if (duration > 0) {
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+            return toast;
+        }
+
+        function copyUrl(url, btn) {
+            const doCopy = () => {
+                if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(url);
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try { document.execCommand('copy'); } catch(e) {}
+                document.body.removeChild(textarea);
+                return Promise.resolve();
+            };
+            doCopy().then(() => {
+                showToast('✅ URL copied!', 'success', 2000);
+                if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    btn.classList.add('copied');
+                    setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1500);
+                }
+            });
+        }
+
+        // ================================
+        // SITES LIST
+        // ================================
+        async function renderSitesList() {
+            currentView = 'sites';
+            currentSiteId = null;
+            currentSiteName = null;
+
+            const main = document.getElementById('mainContent');
+            main.innerHTML = '<div class="text-center py-20"><div class="spinner mx-auto" style="width:40px;height:40px;border-width:4px;"></div></div>';
+
+            try {
+                const res = await fetch(`/api/html/list_sites/${USERNAME}`);
+                const data = await res.json();
+                const sites = data.sites || [];
+                const siteCount = sites.length;
+                const maxSites = data.max_sites || MAX_SITES;
+                const totalSize = data.total_size || '0 KB';
+                const canCreate = siteCount < maxSites;
+
+                let html = `
+                    <div class="bg-[#12141c] rounded-xl border border-green-800/40 p-4 mb-5 flex justify-between items-center flex-wrap gap-3">
+                        <div class="flex flex-wrap gap-3 text-xs">
+                            <span class="text-gray-400">Sites: <span class="text-green-400 font-bold">${siteCount}/${maxSites}</span></span>
+                            <span class="text-gray-400">Total Storage: <span class="text-cyan-400">${totalSize}</span></span>
+                            <span class="text-gray-400">Per Site: <span class="text-blue-400">500 MB</span></span>
+                        </div>
+                        ${canCreate ? `
+                            <button onclick="openCreateSiteModal()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-sm font-bold btn flex items-center gap-2">
+                                <i class="fas fa-plus"></i> Create New Site
+                            </button>
+                        ` : `
+                            <span class="bg-red-500/20 text-red-400 px-4 py-2 rounded-lg text-sm font-bold">
+                                <i class="fas fa-ban mr-1"></i> Limit Reached
+                            </span>
+                        `}
+                    </div>
+                `;
+
+                if (sites.length === 0) {
+                    html += `
+                        <div class="text-center py-16">
+                            <i class="fas fa-globe text-6xl text-green-500/20 mb-4 block"></i>
+                            <h2 class="text-xl font-bold text-gray-400 mb-2">No Sites Yet</h2>
+                            <p class="text-gray-600 text-sm mb-6">Create your first website to get started</p>
+                            <button onclick="openCreateSiteModal()" class="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-lg text-sm font-bold btn inline-flex items-center gap-2">
+                                <i class="fas fa-plus"></i> Create First Site
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    html += `<h2 class="text-base font-bold mb-3 text-gray-300"><i class="fas fa-globe text-green-400 mr-2"></i>My Websites</h2>`;
+                    html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+
+                    for (const site of sites) {
+                        const isDisabled = site.is_disabled || false;
+                        const isLocked = site.is_locked || false;
+
+                        let statusBadge = '';
+                        if (isLocked) {
+                            statusBadge = '<span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> Locked</span>';
+                        } else if (isDisabled) {
+                            statusBadge = '<span class="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full"><i class="fas fa-pause"></i> Stopped</span>';
+                        } else {
+                            statusBadge = '<span class="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full"><span class="status-dot" style="background:#10b981;"></span>Running</span>';
+                        }
+
+                        const startStopBtn = isDisabled
+                            ? `<button onclick="startSite('${site.site_id}')" class="flex-1 bg-green-600 hover:bg-green-500 px-3 py-2 rounded-lg text-xs font-bold btn" title="Start">
+                                <i class="fas fa-play mr-1"></i> Start
+                              </button>`
+                            : `<button onclick="stopSite('${site.site_id}')" class="flex-1 bg-red-600 hover:bg-red-500 px-3 py-2 rounded-lg text-xs font-bold btn" title="Stop">
+                                <i class="fas fa-stop mr-1"></i> Stop
+                              </button>`;
+
+                        html += `
+                            <div class="site-card">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-globe text-green-400 text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-sm">${site.name}</div>
+                                            <div class="text-[10px] text-gray-500">ID: ${site.site_id}</div>
+                                        </div>
+                                    </div>
+                                    ${statusBadge}
+                                </div>
+                                <div class="url-box mb-3">
+                                    <span class="url">${site.url}</span>
+                                    <button onclick="copyUrl('${site.url}', this)" class="copy-btn" type="button">
+                                        <i class="fas fa-link"></i> Copy URL
+                                    </button>
+                                </div>
+                                <div class="flex justify-between text-[11px] text-gray-500 mb-3">
+                                    <span><i class="fas fa-file mr-1"></i>${site.files_count} files</span>
+                                    <span><i class="fas fa-database mr-1"></i>${site.used_size}</span>
+                                    <span><i class="fas fa-eye mr-1"></i>${site.views} views</span>
+                                </div>
+                                <div class="flex gap-2 flex-wrap">
+                                    ${startStopBtn}
+                                    <button onclick="restartSite('${site.site_id}')" class="bg-orange-600 hover:bg-orange-500 px-3 py-2 rounded-lg text-xs font-bold btn" title="Restart">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    <button onclick="openSite('${site.site_id}', '${site.name}')" class="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-xs font-bold btn">
+                                        <i class="fas fa-folder-open mr-1"></i> Manage
+                                    </button>
+                                    <a href="${site.url}" target="_blank" class="bg-gray-600 hover:bg-gray-500 px-3 py-2 rounded-lg text-white text-xs btn">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                    <button onclick="deleteSite('${site.site_id}', '${site.name}')" class="bg-red-500/10 hover:bg-red-500 px-3 py-2 rounded-lg text-red-400 hover:text-white text-xs btn" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
+                }
+
+                main.innerHTML = html;
+            } catch (e) {
+                main.innerHTML = '<div class="text-center py-20 text-red-400"><i class="fas fa-exclamation-triangle text-3xl mb-3"></i><p>Failed to load sites</p></div>';
+            }
+        }
+
+        // ================================
+        // SITE DETAIL
+        // ================================
+        async function openSite(siteId, siteName) {
+            currentView = 'site-detail';
+            currentSiteId = siteId;
+            currentSiteName = siteName;
+
+            const main = document.getElementById('mainContent');
+            main.innerHTML = '<div class="text-center py-20"><div class="spinner mx-auto" style="width:40px;height:40px;border-width:4px;"></div></div>';
+
+            try {
+                const res = await fetch(`/api/html/get_site/${siteId}`);
+                const site = await res.json();
+
+                if (!site || site.error) {
+                    showToast(site.error || 'Site not found', 'error');
+                    renderSitesList();
+                    return;
+                }
+
+                let html = `
+                    <div class="bg-[#12141c] rounded-xl border border-green-800/40 p-4 mb-4">
+                        <div class="flex justify-between items-center flex-wrap gap-3">
+                            <div class="flex items-center gap-3">
+                                <button onclick="renderSitesList()" class="bg-gray-700 hover:bg-gray-600 w-9 h-9 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <div>
+                                    <h2 class="font-bold text-base flex items-center gap-2">
+                                        <i class="fas fa-globe text-green-400"></i> ${site.name}
+                                    </h2>
+                                    <span class="text-[10px] text-gray-500">ID: ${site.site_id}</span>
+                                </div>
+                            </div>
+                            <a href="${site.url}" target="_blank" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-xs btn flex items-center gap-2">
+                                <i class="fas fa-external-link-alt"></i> Visit Site
+                            </a>
+                        </div>
+                        <div class="url-box mt-3">
+                            <span class="url">${site.url}</span>
+                            <button onclick="copyUrl('${site.url}', this)" class="copy-btn">
+                                <i class="fas fa-link"></i> Copy URL
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 border-b border-gray-800 mb-4 overflow-x-auto">
+                        <button onclick="showSiteTab('upload')" id="tab-upload" class="pb-2 px-1 text-sm text-green-400 border-b-2 border-green-500 font-semibold whitespace-nowrap">
+                            <i class="fas fa-upload mr-1"></i>Upload
+                        </button>
+                        <button onclick="showSiteTab('files')" id="tab-files" class="pb-2 px-1 text-sm text-gray-400 whitespace-nowrap">
+                            <i class="fas fa-folder mr-1"></i>Files
+                        </button>
+                        <button onclick="showSiteTab('stats')" id="tab-stats" class="pb-2 px-1 text-sm text-gray-400 whitespace-nowrap">
+                            <i class="fas fa-chart-bar mr-1"></i>Stats
+                        </button>
+                    </div>
+
+                    <div id="upload-tab">
+                        <div class="bg-[#12141c] rounded-xl border border-green-800/40 p-4 mb-4">
+                            <p class="text-gray-500 text-xs">
+                                • <b class="text-green-400">index.html</b> অবশ্যই থাকতে হবে<br>
+                                • CSS, JS, images সব সাপোর্টেড<br>
+                                • Max 50 MB per upload<br>
+                                • <b class="text-yellow-400">আবার upload করলে আগের ZIP replace হবে</b>
+                            </p>
+                        </div>
+
+                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-cloud-upload-alt big"></i>
+                            <h3 class="text-lg font-bold mb-2">Drag & Drop HTML Files</h3>
+                            <p class="text-gray-500 text-sm mb-3">অথবা</p>
+                            <button class="bg-green-600 hover:bg-green-500 px-5 py-2 rounded-lg text-sm font-bold" type="button">
+                                <i class="fas fa-folder-open mr-2"></i>Select Files
+                            </button>
+                            <input type="file" id="fileInput" class="hidden" multiple>
+                        </div>
+
+                        <div id="uploadProgress" class="hidden mt-4 bg-[#12141c] rounded-xl border border-green-800/40 p-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span id="uploadStatus">Uploading...</span>
+                                <span id="uploadPercent">0%</span>
+                            </div>
+                            <div class="w-full bg-[#0a0c12] rounded-full h-2 overflow-hidden">
+                                <div id="uploadBar" class="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="files-tab" class="hidden">
+                        <div class="mb-3 flex justify-between items-center">
+                            <span class="text-sm text-gray-300"><i class="fas fa-folder text-yellow-500 mr-1"></i>Uploaded Files</span>
+                            <button onclick="loadSiteFiles()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-lg text-xs">
+                                <i class="fas fa-sync-alt mr-1"></i>Refresh
+                            </button>
+                        </div>
+                        <div class="bg-[#12141c] rounded-xl border border-gray-800 overflow-hidden">
+                            <div id="fileList">
+                                <div class="p-6 text-center text-gray-500">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="stats-tab" class="hidden">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="stat-card">
+                                <p class="text-[10px] text-gray-500 mb-1"><i class="fas fa-file mr-1"></i>Total Files</p>
+                                <p class="text-2xl font-bold text-green-400" id="statFiles">${site.files_count || 0}</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="text-[10px] text-gray-500 mb-1"><i class="fas fa-database mr-1"></i>Used Size</p>
+                                <p class="text-2xl font-bold text-cyan-400" id="statSize">${site.used_size || '0 KB'}</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="text-[10px] text-gray-500 mb-1"><i class="fas fa-hdd mr-1"></i>Storage Limit</p>
+                                <p class="text-2xl font-bold text-blue-400">500 MB</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="text-[10px] text-gray-500 mb-1"><i class="fas fa-eye mr-1"></i>Views</p>
+                                <p class="text-2xl font-bold text-purple-400" id="statViews">${site.views || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                main.innerHTML = html;
+                setupDropZone();
+            } catch (e) {
+                showToast('Failed to load site', 'error');
+                renderSitesList();
+            }
+        }
+
+        function showSiteTab(tab) {
+            ['upload','files','stats'].forEach(t => {
+                const el = document.getElementById(`${t}-tab`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (el) el.classList.toggle('hidden', t !== tab);
+                if (btn) {
+                    if (t === tab) btn.className = 'pb-2 px-1 text-sm text-green-400 border-b-2 border-green-500 font-semibold whitespace-nowrap';
+                    else btn.className = 'pb-2 px-1 text-sm text-gray-400 whitespace-nowrap';
+                }
+            });
+            if (tab === 'files') loadSiteFiles();
+        }
+
+        function setupDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            if (!dropZone || !fileInput) return;
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                });
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) uploadSiteFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) uploadSiteFiles(e.target.files);
+            });
+        }
+
+        function uploadSiteFiles(files) {
+            const total = files.length;
+            if (total === 0) return;
+
+            const formData = new FormData();
+            for (let i = 0; i < total; i++) {
+                formData.append('files', files[i], files[i].name);
+            }
+
+            document.getElementById('uploadProgress').classList.remove('hidden');
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('uploadBar').style.width = percent + '%';
+                    document.getElementById('uploadPercent').textContent = percent + '%';
+                    document.getElementById('uploadStatus').textContent = `Uploading ${total} file(s)...`;
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    document.getElementById('uploadProgress').classList.add('hidden');
+                    document.getElementById('uploadBar').style.width = '0%';
+
+                    if (data.success) {
+                        showToast(`✅ ${data.count} file(s) uploaded!`, 'success', 3000);
+                        document.getElementById('fileInput').value = '';
+                        showSiteTab('files');
+                    } else {
+                        showToast(data.error || 'Upload failed!', 'error', 4000);
+                    }
+                } catch (e) {
+                    showToast('Upload error!', 'error', 4000);
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                document.getElementById('uploadProgress').classList.add('hidden');
+                showToast('Network error!', 'error', 4000);
+            });
+
+            xhr.open('POST', `/api/html/upload/${currentSiteId}`);
+            xhr.send(formData);
+        }
+
+        function loadSiteFiles() {
+            fetch(`/api/html/files/${currentSiteId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('fileList');
+                    if (!data.files || data.files.length === 0) {
+                        container.innerHTML = '<div class="p-6 text-center text-gray-500"><i class="fas fa-folder-open mr-2"></i>No files yet</div>';
+                        return;
+                    }
+                    let html = '<table class="w-full text-sm"><tbody>';
+                    data.files.forEach((f) => {
+                        let icon = '<i class="fas fa-file text-blue-400 mr-2"></i>';
+                        if (f.name.endsWith('.html')) icon = '<i class="fas fa-file-code text-orange-400 mr-2"></i>';
+                        else if (f.name.endsWith('.css')) icon = '<i class="fas fa-paint-brush text-cyan-400 mr-2"></i>';
+                        else if (f.name.endsWith('.js')) icon = '<i class="fas fa-code text-yellow-400 mr-2"></i>';
+                        else if (/\.(png|jpg|jpeg|gif|svg|webp)$/i.test(f.name)) icon = '<i class="fas fa-image text-purple-400 mr-2"></i>';
+
+                        let size = f.size < 1024 ? f.size + ' B' : (f.size/1024).toFixed(1) + ' KB';
+                        if (f.size > 1024*1024) size = (f.size/(1024*1024)).toFixed(1) + ' MB';
+
+                        html += `<tr class="border-b border-gray-800 hover:bg-[#1a1d27]">
+                            <td class="p-3">${icon}${f.path || f.name}</td>
+                            <td class="p-3 text-gray-400 text-xs">${size}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="deleteSiteFile('${f.path || f.name}')" class="text-red-400 hover:text-red-300 bg-red-500/10 px-2 py-1 rounded text-xs">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById('fileList').innerHTML = '<div class="p-6 text-center text-red-500">Failed to load files</div>';
+                });
+        }
+
+        function deleteSiteFile(path) {
+            Swal.fire({
+                title: 'Delete File?',
+                text: path,
+                icon: 'warning',
+                background: '#12141c',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/html/delete_file/${currentSiteId}`, {
+                        method: 'DELETE',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({path: path})
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Deleted!', 'success', 2000);
+                            loadSiteFiles();
+                        }
+                    });
+                }
+            });
+        }
+
+        function openCreateSiteModal() {
+            Swal.fire({
+                title: '🌐 Create New Site',
+                html: `
+                    <div class="text-left">
+                        <label class="block text-sm text-gray-400 mb-2">Site Name</label>
+                        <input id="swal-site-name" type="text" placeholder="e.g. portfolio" 
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:border-green-500 outline-none mb-2"
+                            autocomplete="off">
+                        <p class="text-[11px] text-gray-500 mb-3">
+                            ✅ lowercase (a-z), numbers, -, _<br>
+                            ✅ 3-30 characters
+                        </p>
+                        <div class="bg-[#0a0c12] rounded-lg p-3 text-xs">
+                            <span class="text-gray-500">Your URL will be:</span><br>
+                            <span class="text-green-400 font-mono" id="preview-url">/html/${USERNAME}/sitename/</span>
+                        </div>
+                    </div>
+                `,
+                background: '#12141c',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#374151',
+                confirmButtonText: 'Create',
+                didOpen: () => {
+                    const input = document.getElementById('swal-site-name');
+                    const preview = document.getElementById('preview-url');
+                    input.addEventListener('input', () => {
+                        const val = input.value.trim().toLowerCase() || 'sitename';
+                        preview.textContent = `/html/${USERNAME}/${val}/`;
+                    });
+                    input.focus();
+                },
+                preConfirm: () => {
+                    const name = document.getElementById('swal-site-name').value.trim().toLowerCase();
+                    if (!name) {
+                        Swal.showValidationMessage('Site name required');
+                        return false;
+                    }
+                    if (name.length < 3 || name.length > 30) {
+                        Swal.showValidationMessage('Name must be 3-30 characters');
+                        return false;
+                    }
+                    if (!/^[a-z][a-z0-9_-]*$/.test(name)) {
+                        Swal.showValidationMessage('Only lowercase, numbers, - and _');
+                        return false;
+                    }
+                    return name;
+                }
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    createSite(result.value);
+                }
+            });
+        }
+
+        function createSite(siteName) {
+            fetch('/api/html/create_site', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({site_name: siteName})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`✅ Site "${siteName}" created!`, 'success', 3000);
+                    setTimeout(() => renderSitesList(), 800);
+                } else {
+                    showToast(data.error || 'Failed to create site', 'error', 4000);
+                }
+            })
+            .catch(() => {
+                showToast('Network error!', 'error', 4000);
+            });
+        }
+
+        function startSite(siteId) {
+            fetch(`/api/html/start_site/${siteId}`, {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Site started!', 'success', 2000);
+                        setTimeout(() => renderSitesList(), 500);
+                    } else {
+                        showToast(data.error || 'Failed', 'error', 3000);
+                    }
+                })
+                .catch(() => showToast('Network error!', 'error', 3000));
+        }
+
+        function stopSite(siteId) {
+            fetch(`/api/html/stop_site/${siteId}`, {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('⏹️ Site stopped!', 'warning', 2000);
+                        setTimeout(() => renderSitesList(), 500);
+                    } else {
+                        showToast(data.error || 'Failed', 'error', 3000);
+                    }
+                })
+                .catch(() => showToast('Network error!', 'error', 3000));
+        }
+
+        function restartSite(siteId) {
+            fetch(`/api/html/restart_site/${siteId}`, {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('🔄 Site restarted!', 'success', 2000);
+                        setTimeout(() => renderSitesList(), 500);
+                    } else {
+                        showToast(data.error || 'Failed', 'error', 3000);
+                    }
+                })
+                .catch(() => showToast('Network error!', 'error', 3000));
+        }
+
+        function deleteSite(siteId, siteName) {
+            Swal.fire({
+                title: '⚠️ Delete Site?',
+                html: `
+                    <div class="text-left">
+                        <p class="text-red-400 text-sm mb-3"><strong>Site:</strong> ${siteName}</p>
+                        <p class="text-yellow-400 text-xs mb-3">⚠️ সব file permanently মুছে যাবে!</p>
+                        <p class="text-gray-400 text-xs mb-2">Type <b class="text-red-400">DELETE</b> to confirm:</p>
+                    </div>
+                `,
+                input: 'text',
+                inputPlaceholder: 'Type DELETE',
+                icon: 'warning',
+                background: '#12141c',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#374151',
+                confirmButtonText: 'Delete',
+                inputValidator: (value) => {
+                    if (value !== 'DELETE') {
+                        return 'Type "DELETE" to confirm';
+                    }
+                    return null;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleting...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading(),
+                        background: '#12141c',
+                        color: '#fff'
+                    });
+
+                    fetch(`/api/html/delete_site/${siteId}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '✅ Deleted!',
+                                text: `Site "${siteName}" deleted`,
+                                icon: 'success',
+                                background: '#12141c',
+                                color: '#fff',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            setTimeout(() => renderSitesList(), 1500);
+                        } else {
+                            Swal.fire('Error', data.error || 'Failed', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'Network error!', 'error');
+                    });
+                }
+            });
+        }
+
+        // INIT
+        renderSitesList();
+    </script>
+</body>
+</html>
