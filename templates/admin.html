@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | ALAMIN HOSTING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0a0c12; color: #ffffff; font-family: 'Segoe UI', sans-serif; }
+        .gradient-border { border: 1px solid rgba(59, 130, 246, 0.3); }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .hover-glow:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        input[type="range"] {
+            -webkit-appearance: none; height: 8px; border-radius: 4px;
+            background: linear-gradient(to right, #10b981, #f59e0b, #ef4444); outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+            background: #3b82f6; cursor: pointer; border: 2px solid white;
+        }
+        .copy-btn {
+            background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 4px 8px;
+            border-radius: 6px; font-size: 10px; transition: all 0.2s; cursor: pointer;
+            border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .copy-btn:hover { 
+            background: rgba(59, 130, 246, 0.3); 
+            color: #93c5fd; 
+            transform: scale(1.05);
+        }
+        .copy-btn.copied { 
+            background: rgba(34, 197, 94, 0.2); 
+            color: #4ade80; 
+            border-color: rgba(34, 197, 94, 0.4); 
+        }
+        .locked-row { background: rgba(239, 68, 68, 0.05) !important; border-left: 3px solid #ef4444; }
+
+        .top-btn {
+            flex: 1;
+            padding: 18px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .top-btn-file {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        .top-btn-file:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        .top-btn-file.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border-color: #3b82f6;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        .top-btn-html {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .top-btn-html:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+        .top-btn-html.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border-color: #10b981;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+        .top-btn-api {
+            background: rgba(168, 85, 247, 0.1);
+            color: #c084fc;
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+        .top-btn-api:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.5);
+            transform: translateY(-2px);
+        }
+        .top-btn-api.active {
+            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            color: #fff;
+            border-color: #a855f7;
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+        }
+
+        .section { display: none; }
+        .section.active { display: block; animation: fadeInSection 0.3s ease-in; }
+        @keyframes fadeInSection {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal specific animation (separate to avoid conflict) */
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-animate { animation: modalIn 0.25s ease-out; }
+
+        .site-row {
+            background: #0c0e14;
+            border-bottom: 1px solid #1a1d27;
+            transition: background 0.2s;
+        }
+        .site-row:hover { background: #1a1d27; }
+
+        .danger-btn {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .danger-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Modal input styling */
+        .modal-input {
+            width: 100%;
+            background: #0c0e14;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .modal-input::placeholder { color: #4b5563; }
+    </style>
+</head>
+<body class="bg-[#0a0c12] text-white">
+
+    <header class="bg-[#0e1018] border-b border-blue-900/30 px-6 py-4 flex justify-between items-center sticky top-0 z-10 backdrop-blur-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-400 rounded-xl flex items-center justify-center shadow-lg">
+                <i class="fas fa-cloud-upload-alt text-xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold">ALAMIN <span class="text-blue-400">HOSTING</span></h1>
+                <p class="text-xs text-gray-500">Admin Control Panel</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="openAdminSettings()" class="text-sm text-gray-400 bg-[#1a1d27] px-3 py-1 rounded-full hover:bg-blue-500/20 hover:text-blue-400 transition cursor-pointer flex items-center gap-2" title="Admin Settings">
+                <i class="fas fa-user-shield"></i>
+                <span>admin</span>
+                <i class="fas fa-cog text-xs opacity-60"></i>
+            </button>
+            <a href="/logout" class="text-red-400 hover:text-red-300 transition bg-red-500/10 px-3 py-1 rounded-full">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 max-w-7xl">
+
+        <div class="flex gap-3 mb-6">
+            <button onclick="switchTab(0)" id="tab-file" class="top-btn top-btn-file active">
+                <i class="fas fa-server text-xl"></i>
+                <span>📁 File Server</span>
+            </button>
+            <button onclick="switchTab(1)" id="tab-html" class="top-btn top-btn-html">
+                <i class="fas fa-globe text-xl"></i>
+                <span>🌐 HTML Server</span>
+            </button>
+            <button onclick="switchTab(2)" id="tab-api" class="top-btn top-btn-api">
+                <i class="fas fa-code text-xl"></i>
+                <span>🚀 API Server</span>
+            </button>
+        </div>
+
+        <!-- ============ FILE SERVER SECTION ============ -->
+        <div id="section-file" class="section active">
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-[#12141c] rounded-xl gradient-border p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">File Users</p>
+                            <p class="text-2xl font-bold">{{ file_users|length }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-lg text-blue-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-green-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">File Servers</p>
+                            <p class="text-2xl font-bold">{{ file_total_servers }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-server text-lg text-green-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-yellow-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Running</p>
+                            <p class="text-2xl font-bold text-yellow-400">{{ file_total_running }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-play-circle text-lg text-yellow-400 pulse"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-purple-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Stopped</p>
+                            <p class="text-2xl font-bold text-purple-400">{{ file_total_servers - file_total_running }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-stop-circle text-lg text-purple-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl gradient-border p-4 mb-6">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-sm font-bold text-gray-400 mr-2">
+                        <i class="fas fa-globe text-blue-400 mr-1"></i> Global Control:
+                    </h3>
+                    <button onclick="startAllServers()" class="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                        <i class="fas fa-play"></i> Start All
+                    </button>
+                    <button onclick="stopAllServers()" class="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                        <i class="fas fa-stop"></i> Stop All
+                    </button>
+                    <button onclick="restartAllServers()" class="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Restart All
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl gradient-border p-5 mb-6">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-plus-circle text-blue-400"></i> Create New File Server
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Username *</label>
+                        <input type="text" id="newUsername" placeholder="Enter username" class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Password *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="newPassword" placeholder="Enter password" class="flex-1 bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none">
+                            <button onclick="document.getElementById('newPassword').value = generatePassword()" class="bg-blue-600/20 hover:bg-blue-600 px-3 rounded-lg text-blue-400 transition">
+                                <i class="fas fa-dice"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Type</label>
+                        <input type="text" value="📁 File Server" readonly class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-cyan-400 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">RAM</label>
+                        <select id="ram" class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                            <option value="128MB">128 MB</option>
+                            <option value="256MB">256 MB</option>
+                            <option value="512MB" selected>512 MB</option>
+                            <option value="1GB">1 GB</option>
+                            <option value="2GB">2 GB</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Disk</label>
+                        <select id="disk" class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                            <option value="512MB">512 MB</option>
+                            <option value="1GB" selected>1 GB</option>
+                            <option value="2GB">2 GB</option>
+                            <option value="5GB">5 GB</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Expiry (Days)</label>
+                        <input type="number" id="expiryDays" value="30" min="0" max="9999" class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                        <p class="text-[10px] text-blue-400 mt-1"><i class="fas fa-info-circle mr-1"></i>0 = Unlimited</p>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-xs text-gray-500 mb-2">
+                            <i class="fas fa-tachometer-alt text-blue-400 mr-1"></i> CPU Limit: <span id="cpuLimitValue" class="text-blue-400 font-bold">80%</span>
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="cpuLimit" min="10" max="100" value="80" class="flex-1" oninput="document.getElementById('cpuLimitValue').innerText = this.value + '%'">
+                            <div class="flex gap-1">
+                                <button onclick="setQuickCPU(30)" class="bg-green-600/20 hover:bg-green-600 px-2 py-1 rounded text-xs text-green-400">30%</button>
+                                <button onclick="setQuickCPU(50)" class="bg-yellow-600/20 hover:bg-yellow-600 px-2 py-1 rounded text-xs text-yellow-400">50%</button>
+                                <button onclick="setQuickCPU(80)" class="bg-blue-600/20 hover:bg-blue-600 px-2 py-1 rounded text-xs text-blue-400">80%</button>
+                                <button onclick="setQuickCPU(100)" class="bg-red-600/20 hover:bg-red-600 px-2 py-1 rounded text-xs text-red-400">100%</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="createFileServer()" id="createBtn" class="mt-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 px-5 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
+                    <i class="fas fa-check"></i> Create File Server
+                </button>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl gradient-border overflow-hidden">
+                <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold"><i class="fas fa-server mr-2"></i>File Server List</h2>
+                    </div>
+                    <button onclick="location.reload()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-lg text-xs">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#0c0e14]">
+                            <tr class="text-left text-gray-400 text-xs">
+                                <th class="p-3">User</th>
+                                <th class="p-3">Password</th>
+                                <th class="p-3">Config</th>
+                                <th class="p-3">CPU</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Expiry</th>
+                                <th class="p-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if file_users|length == 0 %}
+                            <tr><td colspan="7" class="p-6 text-center text-gray-500 text-sm"><i class="fas fa-inbox text-2xl mb-2 block"></i>No file servers yet</td></tr>
+                            {% endif %}
+                            {% for user in file_users %}
+                                {% for server in user.servers %}
+                                <tr class="border-b border-gray-800 hover:bg-[#1a1d27] transition {% if server.is_locked %}locked-row{% endif %}">
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <div class="w-7 h-7 {% if server.is_locked %}bg-red-500/20{% else %}bg-blue-500/20{% endif %} rounded-full flex items-center justify-center">
+                                                <span class="text-xs font-bold {% if server.is_locked %}text-red-400{% else %}text-blue-400{% endif %}">{{ user.username[0] | upper }}</span>
+                                            </div>
+                                            <span class="font-mono text-xs">{{ user.username }}</span>
+                                            <button onclick="copyText('{{ user.username }}', this)" class="copy-btn" title="Copy Username"><i class="fas fa-user"></i> User</button>
+                                        </div>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="text-gray-400 text-xs font-mono" id="pass-{{ server.server_id }}">••••••••</span>
+                                            <button onclick="togglePassword('{{ server.server_id }}', '{{ user.raw_password }}')" class="text-gray-500 hover:text-gray-300 text-xs" title="Show/Hide"><i class="fas fa-eye"></i></button>
+                                            <button onclick="copyText('{{ user.raw_password }}', this)" class="copy-btn" title="Copy Password"><i class="fas fa-key"></i> Pass</button>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-xs">
+                                        <span class="bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full">📁 File</span>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-1">
+                                            <div class="w-12 bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                                                <div class="h-full rounded-full" style="width: {{ server.cpu_limit | default(80) }}%; background: {% if server.cpu_limit | default(80) <= 30 %}#10b981{% elif server.cpu_limit | default(80) <= 60 %}#f59e0b{% elif server.cpu_limit | default(80) <= 80 %}#f97316{% else %}#ef4444{% endif %};"></div>
+                                            </div>
+                                            <span class="text-xs font-bold">{{ server.cpu_limit | default(80) }}%</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3">
+                                        {% if server.is_locked %}
+                                        <span class="px-2 py-0.5 rounded-full text-xs bg-red-500/20 text-red-400 flex items-center gap-1 w-fit"><i class="fas fa-lock"></i> Locked</span>
+                                        {% elif server.status == 'running' %}
+                                        <span class="px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-400 flex items-center gap-1 w-fit"><i class="fas fa-circle text-[6px]"></i> Running</span>
+                                        {% else %}
+                                        <span class="px-2 py-0.5 rounded-full text-xs bg-gray-500/20 text-gray-400 flex items-center gap-1 w-fit"><i class="fas fa-circle text-[6px]"></i> Stopped</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="p-3"><span class="text-yellow-400 text-xs">{% if server.expiry == 'unlimited' %}<b class="text-green-400">♾️ Unlimited</b>{% else %}{{ server.expiry[:10] if server.expiry else 'N/A' }}{% endif %}</span></td>
+                                    <td class="p-3">
+                                        <div class="flex gap-1 flex-wrap">
+                                            {% if server.is_locked %}
+                                            <button onclick="unlockServer('{{ server.server_id }}', 'file')" class="text-green-400 bg-green-500/10 px-2 py-1 rounded text-xs" title="Unlock"><i class="fas fa-lock-open"></i></button>
+                                            {% else %}
+                                            <button onclick="toggleServer('{{ server.server_id }}', '{{ server.status }}')" class="{% if server.status == 'running' %}text-red-400 bg-red-500/10{% else %}text-green-400 bg-green-500/10{% endif %} text-xs px-2 py-1 rounded" title="Start/Stop">
+                                                <i class="fas {% if server.status == 'running' %}fa-stop{% else %}fa-play{% endif %}"></i>
+                                            </button>
+                                            <button onclick="restartServer('{{ server.server_id }}')" class="text-orange-400 bg-orange-500/10 px-2 py-1 rounded text-xs" title="Restart"><i class="fas fa-sync-alt"></i></button>
+                                            <button onclick="lockServer('{{ server.server_id }}', 'file')" class="text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded text-xs" title="Lock"><i class="fas fa-lock"></i></button>
+                                            {% endif %}
+                                            <button onclick="deleteFileServer('{{ user.username }}', '{{ server.server_id }}')" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ HTML SERVER SECTION ============ -->
+        <div id="section-html" class="section">
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-[#12141c] rounded-xl border border-green-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">HTML Users</p>
+                            <p class="text-2xl font-bold">{{ html_users|length }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-globe text-lg text-green-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-cyan-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Total Sites</p>
+                            <p class="text-2xl font-bold">{{ html_total_sites }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sitemap text-lg text-cyan-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-blue-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Active</p>
+                            <p class="text-2xl font-bold text-blue-400">{{ html_total_active }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-lg text-blue-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-red-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Locked</p>
+                            <p class="text-2xl font-bold text-red-400">{{ html_total_locked }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-lock text-lg text-red-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl border border-green-500/30 p-5 mb-6">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-plus-circle text-green-400"></i> Create New HTML Server
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Username *</label>
+                        <input type="text" id="htmlUsername" placeholder="e.g. mywebsite"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Password *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="htmlPassword" placeholder="Enter password"
+                                class="flex-1 bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none">
+                            <button onclick="document.getElementById('htmlPassword').value = generatePassword()"
+                                class="bg-green-600/20 hover:bg-green-600 px-3 rounded-lg text-green-400 transition">
+                                <i class="fas fa-dice"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Type</label>
+                        <input type="text" value="🌐 HTML Server" readonly
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-green-400 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-hdd text-green-400 mr-1"></i> Per Site Storage
+                        </label>
+                        <input type="text" value="500 MB / site" readonly
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-cyan-400 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-layer-group text-green-400 mr-1"></i> Max HTML Sites *
+                        </label>
+                        <input type="number" id="htmlMaxSites" value="1" min="1" max="100"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-clock text-green-400 mr-1"></i> Expiry (Days)
+                        </label>
+                        <input type="number" id="htmlExpiryDays" value="0" min="0" max="9999"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-green-500 outline-none">
+                        <p class="text-[10px] text-green-400 mt-1"><i class="fas fa-info-circle mr-1"></i><b>0 = Unlimited</b></p>
+                    </div>
+                </div>
+                <button onclick="createHtmlServer()" id="createHtmlBtn"
+                    class="mt-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 px-5 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
+                    <i class="fas fa-check"></i> Create HTML Server
+                </button>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl border border-green-500/20 overflow-hidden">
+                <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold"><i class="fas fa-globe mr-2 text-green-400"></i>HTML Server List</h2>
+                    </div>
+                    <button onclick="location.reload()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-lg text-xs">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+
+                {% if html_users|length == 0 %}
+                <div class="p-8 text-center text-gray-500 text-sm">
+                    <i class="fas fa-globe text-3xl mb-3 block"></i>
+                    No HTML servers yet
+                </div>
+                {% endif %}
+
+                {% for user in html_users %}
+                <div class="border-b border-gray-800">
+                    <div class="p-4 hover:bg-[#1a1d27] transition">
+                        <div class="flex items-center justify-between flex-wrap gap-3">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <div class="w-9 h-9 {% if user.has_locked %}bg-red-500/20{% else %}bg-green-500/20{% endif %} rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-bold {% if user.has_locked %}text-red-400{% else %}text-green-400{% endif %}">{{ user.username[0] | upper }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-mono text-sm">{{ user.username }}</span>
+                                    <button onclick="copyText('{{ user.username }}', this)" class="copy-btn" title="Copy Username">
+                                        <i class="fas fa-user"></i> User
+                                    </button>
+                                    <button onclick="copyText('{{ user.raw_password }}', this)" class="copy-btn" title="Copy Password">
+                                        <i class="fas fa-key"></i> Pass
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <span class="text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-layer-group mr-1"></i>{{ user.site_count }}/{{ user.max_sites }} sites
+                                </span>
+                                <span class="text-xs text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-database mr-1"></i>{{ user.total_size }}
+                                </span>
+                                <span class="text-xs text-yellow-400 bg-yellow-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {% if user.expiry_display == 'Unlimited' or user.expiry_display == 'unlimited' %}
+                                        <b class="text-green-400">♾️ Unlimited</b>
+                                    {% else %}
+                                        {{ user.expiry_display }}
+                                    {% endif %}
+                                </span>
+                                <button onclick="toggleExpand('{{ user.username }}')" class="bg-blue-600/20 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-blue-400 text-xs transition">
+                                    <i class="fas fa-eye" id="eye-{{ user.username }}"></i> <span id="btn-{{ user.username }}">View Sites</span>
+                                </button>
+                                <button onclick="deleteEntireUser('{{ user.username }}')" class="danger-btn" title="Delete Entire Server">
+                                    <i class="fas fa-trash-alt"></i> Delete Server
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sites-{{ user.username }}" class="hidden bg-[#0a0c12]">
+                        {% if user.sites|length == 0 %}
+                        <div class="p-4 text-center text-gray-600 text-xs">
+                            <i class="fas fa-info-circle mr-1"></i> No sites created yet
+                        </div>
+                        {% endif %}
+                        {% for site in user.sites %}
+                        <div class="site-row p-3 flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <i class="fas fa-globe text-green-400 text-xs"></i>
+                                    <span class="font-mono text-xs text-green-300">{{ site.name }}</span>
+                                    {% if site.is_locked %}
+                                    <span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">
+                                        <i class="fas fa-lock"></i> Locked
+                                    </span>
+                                    {% endif %}
+                                    {% if site.is_disabled %}
+                                    <span class="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">
+                                        <i class="fas fa-pause"></i> Stopped
+                                    </span>
+                                    {% else %}
+                                    <span class="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                                        <i class="fas fa-circle text-[6px]"></i> Running
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span class="text-[10px] text-gray-400 font-mono truncate max-w-[300px]" title="{{ site.url }}">{{ site.url }}</span>
+                                    <button onclick="copyText('{{ site.url }}', this)" class="copy-btn" title="Copy URL">
+                                        <i class="fas fa-link"></i> Copy URL
+                                    </button>
+                                    <a href="{{ site.url }}" target="_blank" rel="noopener" class="copy-btn" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.3);" title="Open in new tab">
+                                        <i class="fas fa-external-link-alt"></i> Open
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs flex-wrap">
+                                <span class="text-cyan-400">
+                                    <i class="fas fa-file mr-1"></i>{{ site.files_count }}
+                                </span>
+                                <span class="text-purple-400">
+                                    <i class="fas fa-database mr-1"></i>{{ site.used_size }}
+                                </span>
+                                <span class="text-yellow-400">
+                                    <i class="fas fa-eye mr-1"></i>{{ site.views }}
+                                </span>
+                                <div class="flex gap-1 ml-2">
+                                    {% if site.is_locked %}
+                                    <button onclick="unlockHtmlSite('{{ site.site_id }}')" class="text-green-400 bg-green-500/10 px-2 py-1 rounded text-xs" title="Unlock">
+                                        <i class="fas fa-lock-open"></i>
+                                    </button>
+                                    {% else %}
+                                    <button onclick="lockHtmlSite('{{ site.site_id }}')" class="text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded text-xs" title="Lock">
+                                        <i class="fas fa-lock"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button onclick="deleteHtmlSite('{{ user.username }}', '{{ site.site_id }}', '{{ site.name }}')" class="text-red-400 bg-red-500/10 px-2 py-1 rounded text-xs" title="Delete Site">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ============ API SERVER SECTION ============ -->
+        <div id="section-api" class="section">
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-[#12141c] rounded-xl border border-purple-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">API Users</p>
+                            <p class="text-2xl font-bold">{{ api_users|length }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-lg text-purple-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-cyan-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Total Apps</p>
+                            <p class="text-2xl font-bold">{{ api_total_apps }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-cubes text-lg text-cyan-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-green-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Running</p>
+                            <p class="text-2xl font-bold text-green-400">{{ api_total_running }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-play-circle text-lg text-green-400 pulse"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#12141c] rounded-xl border border-yellow-500/20 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-400 text-xs">Stopped</p>
+                            <p class="text-2xl font-bold text-yellow-400">{{ api_total_apps - api_total_running }}</p>
+                        </div>
+                        <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-stop-circle text-lg text-yellow-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl border border-purple-500/30 p-5 mb-6">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-plus-circle text-purple-400"></i> Create New API Server
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Username *</label>
+                        <input type="text" id="apiUsername" placeholder="e.g. api-user"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Password *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="apiPassword" placeholder="Enter password"
+                                class="flex-1 bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-500 outline-none">
+                            <button onclick="document.getElementById('apiPassword').value = generatePassword()"
+                                class="bg-purple-600/20 hover:bg-purple-600 px-3 rounded-lg text-purple-400 transition">
+                                <i class="fas fa-dice"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Type</label>
+                        <input type="text" value="🚀 API Server" readonly
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-purple-400 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-cubes text-purple-400 mr-1"></i> Max Apps
+                        </label>
+                        <input type="number" id="apiMaxApps" value="3" min="1" max="50"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-file text-purple-400 mr-1"></i> Max Files / App
+                        </label>
+                        <input type="number" id="apiMaxFiles" value="10" min="1" max="100"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-database text-purple-400 mr-1"></i> Disk (MB)
+                        </label>
+                        <input type="number" id="apiMaxDisk" value="100" min="10"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-memory text-purple-400 mr-1"></i> RAM (MB)
+                        </label>
+                        <input type="number" id="apiMaxRam" value="256" min="64"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-microchip text-purple-400 mr-1"></i> CPU Core
+                        </label>
+                        <input type="number" id="apiMaxCpu" value="0.5" min="0.1" max="4" step="0.1"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-clock text-purple-400 mr-1"></i> Expiry (Days)
+                        </label>
+                        <input type="number" id="apiExpiry" value="0" min="0" max="9999"
+                            class="w-full bg-[#0c0e14] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white">
+                        <p class="text-[10px] text-purple-400 mt-1"><i class="fas fa-info-circle mr-1"></i><b>0 = Unlimited</b></p>
+                    </div>
+                </div>
+                <button onclick="createApiServer()" id="createApiBtn"
+                    class="mt-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 px-5 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
+                    <i class="fas fa-check"></i> Create API Server
+                </button>
+            </div>
+
+            <div class="bg-[#12141c] rounded-xl border border-purple-500/20 overflow-hidden">
+                <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold"><i class="fas fa-code mr-2 text-purple-400"></i>API Server List</h2>
+                    </div>
+                    <button onclick="location.reload()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-lg text-xs">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+
+                {% if api_users|length == 0 %}
+                <div class="p-8 text-center text-gray-500 text-sm">
+                    <i class="fas fa-code text-3xl mb-3 block"></i>
+                    No API servers yet
+                </div>
+                {% endif %}
+
+                {% for user in api_users %}
+                <div class="border-b border-gray-800">
+                    <div class="p-4 hover:bg-[#1a1d27] transition">
+                        <div class="flex items-center justify-between flex-wrap gap-3">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <div class="w-9 h-9 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-bold text-purple-400">{{ user.username[0] | upper }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-mono text-sm">{{ user.username }}</span>
+                                    <button onclick="copyText('{{ user.username }}', this)" class="copy-btn" title="Copy Username">
+                                        <i class="fas fa-user"></i> User
+                                    </button>
+                                    <button onclick="copyText('{{ user.raw_password }}', this)" class="copy-btn" title="Copy Password">
+                                        <i class="fas fa-key"></i> Pass
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <span class="text-xs text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-cubes mr-1"></i>{{ user.app_count }}/{{ user.max_apps }} apps
+                                </span>
+                                <span class="text-xs text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-memory mr-1"></i>{{ user.max_ram_mb }}MB
+                                </span>
+                                <span class="text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-microchip mr-1"></i>{{ user.max_cpu }} CPU
+                                </span>
+                                <span class="text-xs text-yellow-400 bg-yellow-500/10 px-3 py-1 rounded-full">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    {% if user.expiry_display == 'Unlimited' or user.expiry_display == 'unlimited' %}
+                                        <b class="text-green-400">♾️ Unlimited</b>
+                                    {% else %}
+                                        {{ user.expiry_display }}
+                                    {% endif %}
+                                </span>
+                                <button onclick="toggleApiExpand('{{ user.username }}')" class="bg-purple-600/20 hover:bg-purple-600 px-3 py-1.5 rounded-lg text-purple-400 text-xs transition">
+                                    <i class="fas fa-eye" id="api-eye-{{ user.username }}"></i> <span id="api-btn-{{ user.username }}">View Apps</span>
+                                </button>
+                                <button onclick="deleteApiUser('{{ user.username }}')" class="danger-btn" title="Delete Entire API Server">
+                                    <i class="fas fa-trash-alt"></i> Delete Server
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="api-apps-{{ user.username }}" class="hidden bg-[#0a0c12]">
+                        {% if user.apps|length == 0 %}
+                        <div class="p-4 text-center text-gray-600 text-xs">
+                            <i class="fas fa-info-circle mr-1"></i> No apps created yet
+                        </div>
+                        {% endif %}
+                        {% for app in user.apps %}
+                        <div class="site-row p-3 flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <i class="fas fa-code text-purple-400 text-xs"></i>
+                                    <span class="font-mono text-xs text-purple-300">{{ app.name }}</span>
+                                    <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                                        {{ app.language }}
+                                    </span>
+                                    {% if app.status == 'running' %}
+                                    <span class="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                                        <i class="fas fa-circle text-[6px]"></i> Running
+                                    </span>
+                                    {% else %}
+                                    <span class="text-[10px] bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded-full">
+                                        <i class="fas fa-circle text-[6px]"></i> Stopped
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span class="text-[10px] text-gray-400 font-mono">
+                                        ID: {{ app.app_id }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400 font-mono">
+                                        Port: {{ app.port or '-' }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400">
+                                        Files: {{ app.files_count }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="copyText(window.location.origin + '/api-proxy/{{ app.app_id }}/', this)" class="copy-btn" title="Copy API URL">
+                                    <i class="fas fa-link"></i> API URL
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ ADMIN SETTINGS MODAL ============ -->
+    <div id="adminSettingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4" style="display:none;">
+        <div class="bg-[#12141c] rounded-2xl border border-blue-500/30 w-full max-w-md shadow-2xl modal-animate">
+            <div class="p-5 border-b border-gray-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-shield text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white">Admin Settings</h3>
+                        <p class="text-[10px] text-gray-500">Change email &amp; password</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminSettings()" class="text-gray-500 hover:text-red-400 transition" title="Close">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4">
+                <!-- Current Password (verification) -->
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">
+                        <i class="fas fa-lock text-yellow-400 mr-1"></i> Current Password *
+                    </label>
+                    <input type="password" id="adminCurrentPass" placeholder="Enter current password"
+                        autocomplete="current-password"
+                        class="modal-input">
+                </div>
+
+                <div class="border-t border-gray-800 pt-4">
+                    <p class="text-[10px] text-gray-500 mb-3">
+                        <i class="fas fa-info-circle mr-1"></i> নিচের ফিল্ডগুলো ফাঁকা রাখলে পরিবর্তন হবে না।
+                    </p>
+
+                    <!-- New Email -->
+                    <div class="mb-3">
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-envelope text-blue-400 mr-1"></i> New Email
+                        </label>
+                        <input type="email" id="adminNewEmail" placeholder="new-admin@example.com"
+                            autocomplete="off"
+                            class="modal-input">
+                    </div>
+
+                    <!-- New Password -->
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            <i class="fas fa-key text-purple-400 mr-1"></i> New Password
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="adminNewPass" placeholder="New password (min 6 chars)"
+                                autocomplete="new-password"
+                                class="modal-input flex-1">
+                            <button type="button" onclick="document.getElementById('adminNewPass').value = generatePassword()"
+                                class="bg-purple-600/20 hover:bg-purple-600 px-3 rounded-lg text-purple-400 transition" title="Generate Random">
+                                <i class="fas fa-dice"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t border-gray-800 flex gap-2">
+                <button type="button" onclick="closeAdminSettings()" class="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+                    Cancel
+                </button>
+                <button type="button" onclick="saveAdminSettings()" id="adminSaveBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 px-4 py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 0;
+        let isAdminModalOpen = false;
+
+        // ═══════════════════════════════════════════
+        // TAB SWITCHING
+        // ═══════════════════════════════════════════
+        function switchTab(index, save = true) {
+            currentTab = index;
+            const tabs = ['tab-file', 'tab-html', 'tab-api'];
+            const sections = ['section-file', 'section-html', 'section-api'];
+            tabs.forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('active', i === index);
+            });
+            sections.forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('active', i === index);
+            });
+            if (save) {
+                try { localStorage.setItem('alamin_admin_tab', String(index)); } catch(e) {}
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        // DOM READY — All event listeners here
+        // ═══════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore last tab
+            let lastTab = 0;
+            try {
+                const saved = localStorage.getItem('alamin_admin_tab');
+                if (saved === '1') lastTab = 1;
+                else if (saved === '2') lastTab = 2;
+                else lastTab = 0;
+            } catch(e) { lastTab = 0; }
+            switchTab(lastTab, false);
+
+            // Modal backdrop click
+            const modal = document.getElementById('adminSettingsModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) closeAdminSettings();
+                });
+            }
+
+            // Enter key to submit in modal
+            const currentPassInput = document.getElementById('adminCurrentPass');
+            if (currentPassInput) {
+                currentPassInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveAdminSettings();
+                    }
+                });
+            }
+        });
+
+        // Escape key closes modal (only if open)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isAdminModalOpen) {
+                closeAdminSettings();
+            }
+        });
+
+        // ═══════════════════════════════════════════
+        // EXPAND/COLLAPSE
+        // ═══════════════════════════════════════════
+        function toggleExpand(username) {
+            const sitesDiv = document.getElementById('sites-' + username);
+            const btnText = document.getElementById('btn-' + username);
+            const eyeIcon = document.getElementById('eye-' + username);
+            if (!sitesDiv) return;
+            if (sitesDiv.classList.contains('hidden')) {
+                sitesDiv.classList.remove('hidden');
+                if (btnText) btnText.textContent = 'Hide Sites';
+                if (eyeIcon) eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                sitesDiv.classList.add('hidden');
+                if (btnText) btnText.textContent = 'View Sites';
+                if (eyeIcon) eyeIcon.className = 'fas fa-eye';
+            }
+        }
+
+        function toggleApiExpand(username) {
+            const div = document.getElementById('api-apps-' + username);
+            const btnText = document.getElementById('api-btn-' + username);
+            const eyeIcon = document.getElementById('api-eye-' + username);
+            if (!div) return;
+            if (div.classList.contains('hidden')) {
+                div.classList.remove('hidden');
+                if (btnText) btnText.textContent = 'Hide Apps';
+                if (eyeIcon) eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                div.classList.add('hidden');
+                if (btnText) btnText.textContent = 'View Apps';
+                if (eyeIcon) eyeIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        // UTILS
+        // ═══════════════════════════════════════════
+        function generatePassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let password = '';
+            for (let i = 0; i < 12; i++) password += chars.charAt(Math.floor(Math.random() * chars.length));
+            return password;
+        }
+
+        function setQuickCPU(value) {
+            const cpuInput = document.getElementById('cpuLimit');
+            const cpuLabel = document.getElementById('cpuLimitValue');
+            if (cpuInput) cpuInput.value = value;
+            if (cpuLabel) cpuLabel.innerText = value + '%';
+        }
+
+        function copyText(text, btn) {
+            if (!text || text === 'None' || text === 'undefined' || text === '••••••••') {
+                Swal.fire('Error', 'Nothing to copy!', 'error');
+                return;
+            }
+            const doCopy = () => {
+                if (navigator.clipboard && window.isSecureContext) {
+                    return navigator.clipboard.writeText(text);
+                }
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.top = '0';
+                textarea.style.left = '0';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try { document.execCommand('copy'); } catch(e) {}
+                document.body.removeChild(textarea);
+                return Promise.resolve();
+            };
+            doCopy().then(() => {
+                const Toast = Swal.mixin({
+                    toast: true, position: 'top-end', showConfirmButton: false,
+                    timer: 2000, timerProgressBar: true,
+                    background: '#12141c', color: '#fff'
+                });
+                Toast.fire({ icon: 'success', title: '✅ Copied!' });
+                if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.innerHTML = original;
+                        btn.classList.remove('copied');
+                    }, 1500);
+                }
+            }).catch(err => {
+                console.error('Copy error:', err);
+                Swal.fire('Error', 'Copy failed!', 'error');
+            });
+        }
+
+        function togglePassword(siteId, password) {
+            const el = document.getElementById('pass-' + siteId);
+            if (!el) return;
+            if (el.innerText === '••••••••') {
+                el.innerText = password;
+            } else {
+                el.innerText = '••••••••';
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        // ADMIN SETTINGS
+        // ═══════════════════════════════════════════
+        function openAdminSettings() {
+            const modal = document.getElementById('adminSettingsModal');
+            if (!modal) return;
+            isAdminModalOpen = true;
+            // Clear fields
+            document.getElementById('adminCurrentPass').value = '';
+            document.getElementById('adminNewEmail').value = '';
+            document.getElementById('adminNewPass').value = '';
+            // Show
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Focus
+            setTimeout(() => document.getElementById('adminCurrentPass').focus(), 100);
+        }
+
+        function closeAdminSettings() {
+            const modal = document.getElementById('adminSettingsModal');
+            if (!modal) return;
+            isAdminModalOpen = false;
+            // Clear sensitive fields
+            document.getElementById('adminCurrentPass').value = '';
+            document.getElementById('adminNewEmail').value = '';
+            document.getElementById('adminNewPass').value = '';
+            // Hide
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function saveAdminSettings() {
+            const currentPass = document.getElementById('adminCurrentPass').value.trim();
+            const newEmail = document.getElementById('adminNewEmail').value.trim();
+            const newPass = document.getElementById('adminNewPass').value.trim();
+
+            // ── Validation ──
+            if (!currentPass) {
+                Swal.fire('Error', 'Current password required!', 'error');
+                document.getElementById('adminCurrentPass').focus();
+                return;
+            }
+            if (!newEmail && !newPass) {
+                Swal.fire('Info', 'Email বা Password — অন্তত একটি পরিবর্তন করুন।', 'info');
+                return;
+            }
+            if (newEmail && !isValidEmail(newEmail)) {
+                Swal.fire('Error', 'Invalid email format!', 'error');
+                document.getElementById('adminNewEmail').focus();
+                return;
+            }
+            if (newPass && newPass.length < 6) {
+                Swal.fire('Error', 'New password must be at least 6 characters!', 'error');
+                document.getElementById('adminNewPass').focus();
+                return;
+            }
+
+            const btn = document.getElementById('adminSaveBtn');
+            if (!btn) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            fetch('/admin/update_credentials', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    current_password: currentPass,
+                    new_email: newEmail || '',
+                    new_password: newPass || ''
+                })
+            })
+            .then(async (res) => {
+                let data;
+                try { data = await res.json(); }
+                catch(e) { data = { success: false, error: 'Invalid server response' }; }
+                return { ok: res.ok, status: res.status, data };
+            })
+            .then(({ ok, status, data }) => {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+
+                if (ok && data.success) {
+                    // Build change summary
+                    const changes = [];
+                    if (data.email_changed) changes.push('📧 Email updated');
+                    if (data.password_changed) changes.push('🔑 Password updated');
+
+                    let countdown = 3;
+                    Swal.fire({
+                        title: '✅ Updated!',
+                        html: `<div class="text-left space-y-2">
+                            ${changes.map(c => `<p>${c}</p>`).join('')}
+                            <p class="text-xs text-yellow-400 mt-3">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Re-login required! Redirecting in <b id="swalCountdown">${countdown}</b>s...
+                            </p>
+                        </div>`,
+                        icon: 'success',
+                        background: '#12141c',
+                        color: '#fff',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            const interval = setInterval(() => {
+                                countdown--;
+                                const el = document.getElementById('swalCountdown');
+                                if (el) el.textContent = countdown;
+                                if (countdown <= 0) clearInterval(interval);
+                            }, 1000);
+                        }
+                    });
+                    setTimeout(() => { window.location.href = '/logout'; }, 3000);
+                } else {
+                    const msg = data.error || (status === 401 ? 'Unauthorized — please re-login' : 'Update failed');
+                    Swal.fire('Error', msg, 'error');
+                }
+            })
+            .catch((err) => {
+                console.error('Save error:', err);
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                Swal.fire('Error', 'Network error! Please try again.', 'error');
+            });
+        }
+
+        // ═══════════════════════════════════════════
+        // FILE SERVER ACTIONS
+        // ═══════════════════════════════════════════
+        function createFileServer() {
+            const btn = document.getElementById('createBtn');
+            const data = {
+                username: document.getElementById('newUsername').value.trim(),
+                password: document.getElementById('newPassword').value.trim(),
+                server_type: 'file_server',
+                ram: document.getElementById('ram').value,
+                disk: document.getElementById('disk').value,
+                expiry_days: parseInt(document.getElementById('expiryDays').value) || 0,
+                cpu_limit: parseInt(document.getElementById('cpuLimit').value) || 80
+            };
+            if (!data.username || !data.password) { Swal.fire('Error', 'Username & password required!', 'error'); return; }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            fetch('/admin/create_server', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Create File Server';
+                if (data.success) {
+                    Swal.fire({
+                        title: '🎉 File Server Created!',
+                        html: `<div class="text-left space-y-2"><p><strong>Username:</strong> ${data.username}</p><p><strong>Password:</strong> ${data.password}</p></div>`,
+                        icon: 'success', background: '#12141c', color: '#fff'
+                    });
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    Swal.fire('Error', data.error || 'Failed', 'error');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Create File Server';
+                Swal.fire('Error', 'Network error!', 'error');
+            });
+        }
+
+        function toggleServer(serverId, currentStatus) {
+            const isRunning = currentStatus === 'running';
+            const action = isRunning ? 'stop' : 'run';
+            const actionText = isRunning ? 'Stopping' : 'Starting';
+            Swal.fire({ title: `${actionText}...`, allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#12141c', color: '#fff' });
+            fetch(`/api/${action}/${serverId}`, {method: 'POST'})
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({ title: '✅ Success!', text: data.msg, icon: 'success', background: '#12141c', color: '#fff', timer: 1500, showConfirmButton: false });
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        Swal.fire('Error', data.msg || 'Failed', 'error');
+                    }
+                });
+        }
+
+        function restartServer(serverId) {
+            Swal.fire({ title: 'Restarting...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#12141c', color: '#fff' });
+            fetch(`/api/stop/${serverId}`, {method: 'POST'})
+                .then(() => {
+                    setTimeout(() => {
+                        fetch(`/api/run/${serverId}`, {method: 'POST'})
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    Swal.fire({ title: '✅ Restarted!', icon: 'success', background: '#12141c', color: '#fff', timer: 1500, showConfirmButton: false });
+                                    setTimeout(() => location.reload(), 1500);
+                                }
+                            });
+                    }, 1500);
+                });
+        }
+
+        function lockServer(serverId, type) {
+            Swal.fire({
+                title: '🔒 Lock Server?', icon: 'warning', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#eab308', confirmButtonText: 'Yes, lock it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const url = type === 'html' ? `/admin/lock_html/${serverId}` : `/admin/lock_server/${serverId}`;
+                    fetch(url, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({ title: '🔒 Locked!', icon: 'success', background: '#12141c', color: '#fff', timer: 1500, showConfirmButton: false });
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        });
+                }
+            });
+        }
+
+        function unlockServer(serverId, type) {
+            Swal.fire({
+                title: '🔓 Unlock Server?', icon: 'question', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#22c55e', confirmButtonText: 'Yes, unlock!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const url = type === 'html' ? `/admin/unlock_html/${serverId}` : `/admin/unlock_server/${serverId}`;
+                    fetch(url, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({ title: '🔓 Unlocked!', icon: 'success', background: '#12141c', color: '#fff', timer: 1500, showConfirmButton: false });
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        });
+                }
+            });
+        }
+
+        function startAllServers() {
+            Swal.fire({
+                title: 'Start All Servers?', text: 'Locked server গুলো skip হবে।',
+                icon: 'question', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#22c55e', confirmButtonText: 'Yes!'
+            }).then((r) => {
+                if (r.isConfirmed) {
+                    Swal.fire({ title: 'Starting...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#12141c', color: '#fff' });
+                    fetch('/admin/start_all_servers', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            Swal.fire({ title: '✅ Done!', html: `<p>Started: <b>${data.started || 0}</b></p><p>Skipped: <b>${data.skipped || 0}</b></p><p>Failed: <b>${data.failed || 0}</b></p>`, icon: 'success', background: '#12141c', color: '#fff' });
+                            setTimeout(() => location.reload(), 2500);
+                        });
+                }
+            });
+        }
+
+        function stopAllServers() {
+            Swal.fire({
+                title: 'Stop All Servers?', icon: 'warning', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes!'
+            }).then((r) => {
+                if (r.isConfirmed) {
+                    Swal.fire({ title: 'Stopping...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#12141c', color: '#fff' });
+                    fetch('/admin/stop_all_servers', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            Swal.fire({ title: '✅ Done!', html: `<p>Stopped: <b>${data.stopped || 0}</b></p>`, icon: 'success', background: '#12141c', color: '#fff' });
+                            setTimeout(() => location.reload(), 2500);
+                        });
+                }
+            });
+        }
+
+        function restartAllServers() {
+            Swal.fire({
+                title: 'Restart All Servers?', icon: 'warning', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#f97316', confirmButtonText: 'Yes!'
+            }).then((r) => {
+                if (r.isConfirmed) {
+                    Swal.fire({ title: 'Restarting...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#12141c', color: '#fff' });
+                    fetch('/admin/restart_all_servers', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            Swal.fire({ title: '✅ Done!', html: `<p>Restarted: <b>${data.restarted || 0}</b></p>`, icon: 'success', background: '#12141c', color: '#fff' });
+                            setTimeout(() => location.reload(), 2500);
+                        });
+                }
+            });
+        }
+
+        function deleteFileServer(username, serverId) {
+            Swal.fire({
+                title: 'Delete File Server?',
+                html: `<p class="text-red-400 text-sm"><strong>User:</strong> ${username}</p><p class="text-yellow-400 text-xs mt-2">⚠️ Cannot be undone!</p>`,
+                icon: 'warning', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/delete_server/${username}/${serverId}`, {method: 'POST'})
+                        .then(() => {
+                            Swal.fire({ title: 'Deleted!', icon: 'success', background: '#12141c', color: '#fff', timer: 1000, showConfirmButton: false });
+                            setTimeout(() => location.reload(), 1000);
+                        });
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════
+        // HTML SERVER ACTIONS
+        // ═══════════════════════════════════════════
+        function createHtmlServer() {
+            const btn = document.getElementById('createHtmlBtn');
+            const data = {
+                username: document.getElementById('htmlUsername').value.trim(),
+                password: document.getElementById('htmlPassword').value.trim(),
+                site_type: 'html_server',
+                max_sites: parseInt(document.getElementById('htmlMaxSites').value) || 1,
+                expiry_days: parseInt(document.getElementById('htmlExpiryDays').value) || 0
+            };
+            if (!data.username || !data.password) {
+                Swal.fire('Error', 'Username & password required!', 'error');
+                return;
+            }
+            if (data.max_sites < 1 || data.max_sites > 100) {
+                Swal.fire('Error', 'Max sites must be between 1 and 100!', 'error');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            fetch('/admin/create_html_server', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Create HTML Server';
+                if (data.success) {
+                    Swal.fire({
+                        title: '🌐 HTML Server Created!',
+                        html: `
+                            <div class="text-left space-y-2">
+                                <p><strong>Username:</strong> ${data.username}</p>
+                                <p><strong>Password:</strong> ${data.password}</p>
+                                <p><strong>Max Sites:</strong> ${data.max_sites}</p>
+                                <p><strong>Expiry:</strong> ${data.expiry_display || 'Unlimited'}</p>
+                            </div>
+                        `,
+                        icon: 'success', background: '#12141c', color: '#fff'
+                    });
+                    document.getElementById('htmlUsername').value = '';
+                    document.getElementById('htmlPassword').value = '';
+                    document.getElementById('htmlMaxSites').value = '1';
+                    document.getElementById('htmlExpiryDays').value = '0';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    Swal.fire('Error', data.error || 'Failed', 'error');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Create HTML Server';
+                Swal.fire('Error', 'Network error!', 'error');
+            });
+        }
+
+        function lockHtmlSite(siteId) {
+            Swal.fire({
+                title: '🔒 Lock Site?', icon: 'warning', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#eab308', confirmButtonText: 'Yes!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/lock_html/${siteId}`, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({ title: '🔒 Locked!', icon: 'success', background: '#12141c', color: '#fff', timer: 1500, showConfirmButton: false });
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        });
+                }
+            });
+        }
+
+        function unlockHtmlSite(siteId) {
+            Swal.fire({
+                title: '🔓 Unlock Site?', icon: 'question', background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#22c55e', confirmButtonText: 'Yes!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/unlock_html/${siteId}`, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({ title: '🔓 Unlocked!', icon: 'success', background: '#12141c', color: '#fff', timer: 1500, showConfirmButton: false });
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        });
+                }
+            });
+        }
+
+        function deleteHtmlSite(username, siteId, siteName) {
+            Swal.fire({
+                title: '⚠️ Delete Site?',
+                html: `
+                    <div class="text-left">
+                        <p class="text-red-400 text-sm mb-2"><strong>User:</strong> ${username}</p>
+                        <p class="text-red-400 text-sm mb-3"><strong>Site:</strong> ${siteName}</p>
+                        <p class="text-gray-400 text-xs mb-2">Type <b class="text-red-400">DELETE</b> to confirm:</p>
+                    </div>
+                `,
+                input: 'text',
+                inputPlaceholder: 'Type DELETE here',
+                icon: 'warning',
+                background: '#12141c',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#374151',
+                confirmButtonText: 'Delete',
+                inputValidator: (value) => {
+                    if (value !== 'DELETE') {
+                        return 'Type "DELETE" to confirm';
+                    }
+                    return null;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleting...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading(),
+                        background: '#12141c',
+                        color: '#fff'
+                    });
+
+                    fetch(`/admin/delete_html/${username}/${siteId}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '✅ Deleted!',
+                                text: `Site "${siteName}" deleted`,
+                                icon: 'success',
+                                background: '#12141c',
+                                color: '#fff',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Swal.fire('Error', data.error || 'Delete failed', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'Network error!', 'error');
+                    });
+                }
+            });
+        }
+
+        function deleteEntireUser(username) {
+            Swal.fire({
+                title: '⚠️ Delete Entire Server?',
+                html: `
+                    <div class="text-left">
+                        <p class="text-red-400 text-sm mb-3">
+                            <strong>User:</strong> ${username}
+                        </p>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3">
+                            <p class="text-red-400 text-xs">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                <b>Warning!</b> This will:
+                            </p>
+                            <ul class="text-red-400 text-xs mt-2 ml-4 list-disc">
+                                <li>Delete ALL sites of this user</li>
+                                <li>Delete ALL files in HTML_SITES folder</li>
+                                <li>Delete the user account</li>
+                            </ul>
+                        </div>
+                        <p class="text-gray-400 text-xs mb-2">Type the username <b class="text-red-400">${username}</b> to confirm:</p>
+                    </div>
+                `,
+                input: 'text',
+                inputPlaceholder: username,
+                icon: 'warning',
+                background: '#12141c',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#374151',
+                confirmButtonText: 'Delete Entire Server',
+                inputValidator: (value) => {
+                    if (value !== username) {
+                        return `Type "${username}" to confirm`;
+                    }
+                    return null;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleting Entire Server...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading(),
+                        background: '#12141c',
+                        color: '#fff'
+                    });
+
+                    fetch(`/admin/delete_entire_user/${username}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '✅ Deleted!',
+                                html: `User "<b>${username}</b>" and all their sites deleted!`,
+                                icon: 'success',
+                                background: '#12141c',
+                                color: '#fff',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            Swal.fire('Error', data.error || 'Delete failed', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'Network error!', 'error');
+                    });
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════
+        // API SERVER ACTIONS
+        // ═══════════════════════════════════════════
+        function createApiServer() {
+            const btn = document.getElementById('createApiBtn');
+            const data = {
+                username: document.getElementById('apiUsername').value.trim(),
+                password: document.getElementById('apiPassword').value.trim(),
+                max_apps: parseInt(document.getElementById('apiMaxApps').value) || 3,
+                max_files: parseInt(document.getElementById('apiMaxFiles').value) || 10,
+                max_disk_mb: parseInt(document.getElementById('apiMaxDisk').value) || 100,
+                max_ram_mb: parseInt(document.getElementById('apiMaxRam').value) || 256,
+                max_cpu: parseFloat(document.getElementById('apiMaxCpu').value) || 0.5,
+                expiry_days: parseInt(document.getElementById('apiExpiry').value) || 0
+            };
+            if (!data.username || !data.password) { Swal.fire('Error', 'Username & password required!', 'error'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+            fetch('/admin/create_api_server', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(res => res.json()).then(d => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Create API Server';
+                if (d.success) {
+                    Swal.fire({
+                        title: '🚀 API Server Created!',
+                        html: `<div class="text-left space-y-2"><p><strong>Username:</strong> ${d.username}</p><p><strong>Password:</strong> ${d.password}</p><p><strong>Max Apps:</strong> ${d.max_apps}</p><p><strong>Expiry:</strong> ${d.expiry_display}</p></div>`,
+                        icon: 'success', background: '#12141c', color: '#fff'
+                    });
+                    document.getElementById('apiUsername').value = '';
+                    document.getElementById('apiPassword').value = '';
+                    document.getElementById('apiMaxApps').value = '3';
+                    document.getElementById('apiMaxFiles').value = '10';
+                    document.getElementById('apiMaxDisk').value = '100';
+                    document.getElementById('apiMaxRam').value = '256';
+                    document.getElementById('apiMaxCpu').value = '0.5';
+                    document.getElementById('apiExpiry').value = '0';
+                    setTimeout(() => location.reload(), 1500);
+                } else Swal.fire('Error', d.error || 'Failed', 'error');
+            }).catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Create API Server';
+                Swal.fire('Error', 'Network error!', 'error');
+            });
+        }
+
+        function deleteApiUser(username) {
+            Swal.fire({
+                title: '⚠️ Delete API Server?',
+                html: `<div class="text-left"><p class="text-red-400 text-sm mb-3"><strong>User:</strong> ${username}</p><div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3"><p class="text-red-400 text-xs"><i class="fas fa-exclamation-triangle mr-1"></i><b>Warning!</b> This will:</p><ul class="text-red-400 text-xs mt-2 ml-4 list-disc"><li>Stop ALL running apps</li><li>Delete ALL app files</li><li>Delete the user account</li></ul></div><p class="text-gray-400 text-xs mb-2">Type username <b class="text-red-400">${username}</b> to confirm:</p></div>`,
+                input: 'text', inputPlaceholder: username, icon: 'warning',
+                background: '#12141c', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#374151', confirmButtonText: 'Delete API Server',
+                inputValidator: (v) => v !== username ? `Type "${username}" to confirm` : null
+            }).then(r => { if (r.isConfirmed) {
+                Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#12141c', color: '#fff' });
+                fetch(`/admin/delete_api_user/${username}`, { method: 'POST' }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        Swal.fire({ title: '✅ Deleted!', html: `User "<b>${username}</b>" deleted!`, icon: 'success', background: '#12141c', color: '#fff', timer: 2000, showConfirmButton: false });
+                        setTimeout(() => location.reload(), 2000);
+                    } else Swal.fire('Error', data.error || 'Delete failed', 'error');
+                });
+            }});
+        }
+    </script>
+</body>
+</html>
